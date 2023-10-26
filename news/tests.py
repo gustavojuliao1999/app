@@ -17,8 +17,17 @@ class NewsAPIViewTestCase(APITestCase):
     def test_get_all_news(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        expected_data = NewsSerializer(News.objects.all(), many=True).data
-        self.assertEqual(response.data, expected_data)
+        
+        self.assertIn('count', response.data)
+        self.assertIn('next', response.data)
+        self.assertIn('previous', response.data)
+        self.assertIn('results', response.data)
+        
+        page_size = 10  # Defina o mesmo número de itens por página aqui
+        expected_items = min(page_size, len(News.objects.all()))
+        
+        # Verifica se o número de itens na resposta está correto
+        self.assertEqual(len(response.data['results']), expected_items)
     
     def test_retrive_one_news(self):
         url = reverse('news-api-detail', args=[self.news.id])
