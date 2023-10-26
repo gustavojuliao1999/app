@@ -4,7 +4,9 @@ from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from news.models import News
 from news.serializers import NewsSerializer
-
+from django.utils import timezone
+import random
+import string
 
 
 class NewsPagination(PageNumberPagination):
@@ -58,3 +60,28 @@ class NewsAPIView(APIView):
 
         news_article.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class TemporaryLinkCreateView(APIView):
+    def post(self, request):
+        print(request.data)
+        news_id = request.data.get('id')
+        news = News.objects.get(pk=news_id)
+
+        # Gera um token aleatório de 12 caracteres
+        token = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
+
+        # Adiciona o token e a data de expiração ao objeto News
+        news.temporary_link_token = token
+        news.temporary_link_expiration = timezone.now() + timezone.timedelta(hours=1)
+        news.save()
+
+        return Response({'link': f'/api/link/{token}/'})
+
+class TemporaryLinkView(APIView):
+    def get(self, request, token):
+        try:
+            news = News.objects.get(temporary_link_token=token, temporary_link_expiration__gte=timezone.now())
+            serializer = NewsSerializer(news)
+            return Response(serializer.data)
+        except News.DoesNotExist:
+            return Response({'error': 'Link expirado ou inválido.'}, status=400)

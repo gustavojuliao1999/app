@@ -14,8 +14,10 @@ class News(models.Model):
         ('technology', 'Technology')
     ),
     null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True,null=True)
+    updated_at = models.DateTimeField(auto_now=True,null=True)
+    temporary_link_token = models.CharField(max_length=12, null=True, blank=True)
+    temporary_link_expiration = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.title
