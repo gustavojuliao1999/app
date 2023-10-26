@@ -12,7 +12,7 @@ class News(models.Model):
         ('sports', 'Sports'),
         ('entertainment', 'Entertainment'),
         ('technology', 'Technology')
-    ))
+    ),null=True)
 
     def __str__(self):
         return self.title
